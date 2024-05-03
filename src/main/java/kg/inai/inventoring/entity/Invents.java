@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "invents")
-public class Invent {
+public class Invents {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,9 +26,9 @@ public class Invent {
     @NotNull(message = "Client must not be null")
     private Client client;
 
-    public Invent(){
+    public Invents(){
     }
-    public Invent(String name, String picture, String qr, Client client) {
+    public Invents(String name, String picture, String qr, Client client) {
         this.name = name;
         this.picture = picture;
         this.qr = qr;
