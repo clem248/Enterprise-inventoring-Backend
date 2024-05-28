@@ -1,7 +1,6 @@
 package kg.inai.inventoring.controller;
 
-import kg.inai.inventoring.service.QRCodeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import kg.inai.inventoring.service.QRCodeGenerator;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,16 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class QRCodeController {
 
-    private final QRCodeService qrCodeService;
+    private final QRCodeGenerator qrCodeGenerator;
 
-    public QRCodeController(QRCodeService qrCodeService) {
-        this.qrCodeService = qrCodeService;
+    public QRCodeController(QRCodeGenerator qrCodeGenerator) {
+        this.qrCodeGenerator = qrCodeGenerator;
     }
 
     @GetMapping("/generateQRCode")
     public String generateQRCode(@RequestParam String text) {
         try {
-            qrCodeService.generateQRCode(text, 350, 350);
+            qrCodeGenerator.generateQRCode(text, 350, 350);
             return "QR Code generated successfully!";
         } catch (Exception e) {
             return "Failed to generate QR Code: " + e.getMessage();

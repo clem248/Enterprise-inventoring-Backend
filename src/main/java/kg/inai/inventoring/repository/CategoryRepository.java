@@ -1,2 +1,9 @@
-package kg.inai.inventoring.repository;public class CategoryRepository {
+package kg.inai.inventoring.repository;
+
+import kg.inai.inventoring.entity.Category;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CategoryRepository extends JpaRepository<Category, Long> {
 }
