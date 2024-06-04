@@ -41,6 +41,9 @@ public class Invents {
     @NotNull(message = "Client must not be null")
     private Client client;
 
+    @Column(name = "status")
+    private String status;
+
     public Invents() {
     }
 
@@ -53,6 +56,7 @@ public class Invents {
         this.location = location;
         this.client = client;
     }
+
 
     public Long getId() {
         return id;
@@ -116,6 +120,14 @@ public class Invents {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
 

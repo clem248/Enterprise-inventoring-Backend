@@ -21,7 +21,7 @@ public class QRCodeController {
     @GetMapping("/generateQRCode")
     public String generateQRCode(@RequestParam String text) {
         try {
-            qrCodeGenerator.generateQRCode(text, 350, 350);
+            qrCodeGenerator.generateQRCodeWithUrl(text,"test", 350, 350);
             return "QR Code generated successfully!";
         } catch (Exception e) {
             return "Failed to generate QR Code: " + e.getMessage();

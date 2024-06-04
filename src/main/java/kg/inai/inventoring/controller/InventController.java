@@ -37,7 +37,7 @@ public class InventController {
         return inventService.getAllInvents();
     }
     @PostMapping("/save")
-    public ResponseEntity<Invents> saveInvent(@RequestBody Invents invents){
+    public ResponseEntity<Invents> saveInvent(@RequestBody Invents invents) throws Exception{
         Invents createdInvent = inventService.createInvent(invents);
         return new ResponseEntity<>(createdInvent, HttpStatus.CREATED);
     }

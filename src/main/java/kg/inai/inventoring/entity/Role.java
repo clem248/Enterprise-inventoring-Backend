@@ -3,12 +3,16 @@ package kg.inai.inventoring.entity;
 import javax.persistence.*;
 import java.util.Set;
 
+
+import javax.persistence.*;
+import java.util.Set;
+
 @Entity
 @Table(name = "roles")
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
@@ -16,11 +20,12 @@ public class Role {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "roles_permissions",
-                joinColumns = {@JoinColumn(name = "role_id")},
-                inverseJoinColumns = { @JoinColumn(name = "permission_id")})
+            joinColumns = { @JoinColumn(name = "role_id") },
+            inverseJoinColumns = { @JoinColumn(name = "permission_id") })
     private Set<Permission> permissions;
 
-    public Role(){
+    public Role() {
+
     }
 
     public Role(ERole name, Set<Permission> permissions) {
@@ -28,11 +33,11 @@ public class Role {
         this.permissions = permissions;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

@@ -1,16 +1,15 @@
 package kg.inai.inventoring.service;
 
-import kg.inai.inventoring.dto.InventsDTO;
+import java.util.List;
+
+import kg.inai.inventoring.entity.Category;
 import kg.inai.inventoring.entity.Client;
 import kg.inai.inventoring.entity.Invents;
+import kg.inai.inventoring.entity.Location;
+import kg.inai.inventoring.entity.Quality;
 import kg.inai.inventoring.repository.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+        import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,20 +19,25 @@ public class InventService {
     private final QualityRepository qualityRepository;
     private final LocationRepository locationRepository;
     private final ClientRepository clientRepository;
+    private final QRCodeGenerator qrCodeGenerator;
 
     public InventService(InventRepository inventRepository,
                          CategoryRepository categoryRepository,
                          QualityRepository qualityRepository,
                          LocationRepository locationRepository,
-                         ClientRepository clientRepository) {
+                         ClientRepository clientRepository,
+                         QRCodeGenerator qrCodeGenerator) {
         this.inventRepository = inventRepository;
         this.categoryRepository = categoryRepository;
         this.qualityRepository = qualityRepository;
         this.locationRepository = locationRepository;
         this.clientRepository = clientRepository;
+        this.qrCodeGenerator = qrCodeGenerator;
     }
-
-    public Invents createInvent(Invents invent) {
+    public List<Invents> getAllInvents(){
+        return inventRepository.findAll();
+    }
+    public Invents createInvent(Invents invent) throws Exception {
         // Предварительно сохраняем связанные сущности
         categoryRepository.save(invent.getCategory());
         qualityRepository.save(invent.getQuality());
@@ -41,22 +45,35 @@ public class InventService {
         clientRepository.save(invent.getClient());
 
         // Сохраняем основную сущность
-        return inventRepository.save(invent);
+        Invents savedInvent = inventRepository.save(invent);
+
+        // Генерируем QR-код с URL
+        String qrText = "http://localhost:8080/api/invent/scan?inventId=" + savedInvent.getId();
+        String qrPath = qrCodeGenerator.generateQRCodeWithUrl(qrText, savedInvent.getName(), 350, 350);
+        savedInvent.setQr(qrPath);
+
+        // Обновляем сущность с QR-кодом
+        return inventRepository.save(savedInvent);
+    }
+    public Optional<Invents> getInventByQr(String qr) {
+        return inventRepository.findByQr(qr);
     }
 
-    public List<Invents> getAllInvents(){
-        return inventRepository.findAll();
+    public Invents updateInventStatus(Long id, String status) {
+        Optional<Invents> existingInvent = inventRepository.findById(id);
+        if (existingInvent.isPresent()) {
+            Invents invent = existingInvent.get();
+            invent.setStatus(status);
+            return inventRepository.save(invent);
+        } else {
+            return null;
+        }
     }
-//    public Page<InventsDTO> getInvents(int pageNumber, int pageSize, String sortField, String sortOrder) {
-//        Sort sort = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
-//        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
-//        Page<Invents> paymentsPage = InventRepository.findAll(pageRequest);
-//        return paymentsPage.map(payment -> paymentDTOMapper.apply(payment));
-//    }
+
+
     public Optional<Invents> getInventById(Long id){
         return inventRepository.findById(id);
     }
-
 
     public Invents updateInvent(Long id, Invents updatedInvent){
         Optional<Invents> existingInvent = inventRepository.findById(id);

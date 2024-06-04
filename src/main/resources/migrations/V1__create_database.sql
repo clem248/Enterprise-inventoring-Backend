@@ -1,11 +1,11 @@
 create table clients
 (
-    id       bigserial
+    id        bigserial
         primary key,
-    login    varchar(255) not null
+    full_name varchar(255) not null,
+    login     varchar(255) not null
             unique,
-    logo     varchar(255),
-    password varchar(255) not null
+    password  varchar(255) not null
 );
 
 create table invents
@@ -20,27 +20,29 @@ create table invents
     qr        varchar(255) not null,
     quality   bigint not null,
     client_id bigint       not null
-            references clients
+            references clients,
+    status varchar(255)
 );
 
 create table permission
 (
     id          bigserial
         primary key,
-    description varchar(255),
-    name        varchar(255)
+    description varchar(255) not null,
+    name        varchar(255) not null
+            unique
 );
 
 create table roles
 (
-    id   bigserial
+    id   serial
         primary key,
     name varchar(50)
 );
 
 create table roles_permissions
 (
-    role_id       bigint not null
+    role_id       integer not null
             references roles,
     permission_id bigint not null
             references permission,
@@ -51,16 +53,19 @@ create table users
 (
     id       bigserial
         primary key,
-    email    varchar(50),
+    email    varchar(50)
+            unique,
     password varchar(120),
     username varchar(20)
+            unique
 );
+
 
 create table users_roles
 (
-    user_id bigint not null
+    user_id bigint  not null
             references users,
-    role_id bigint not null
+    role_id integer not null
             references roles,
     primary key (user_id, role_id)
 );
@@ -89,14 +94,22 @@ create table quality
 /* ROLES and TEST info*/
 INSERT INTO roles(name) VALUES('ROLE_SUPER_ADMIN');
 INSERT INTO roles(name) VALUES('ROLE_ADMIN');
-INSERT INTO roles(name) VALUES('ROLE_MANAGER');
-INSERT INTO permission(description, name) VALUES('testPermissionDesc', 'testPermissionName');
-INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 1);
-INSERT INTO users(email, password, username) VALUES('exampleUser@example.com', '$2a$10$fJWr5Od5AWWgEARKrq7jaeh/Q4tUhHAyhvghkWxgbWpMgfAGCFZ.O', 'exampleUser');
+INSERT INTO roles(name) VALUES('ROLE_CLIENT');
+
+INSERT INTO clients(full_name, login, password)
+VALUES ('super-admin', 'super-admin', '$2a$10$wScCezWbw0GlYa606P9GquBcXoaandeYIGQuLWRWJD4Lmn4p55oRy');
+
+INSERT INTO users (email, password, username)
+VALUES ('super-admin@gmail.com', '$2a$12$Qll7eJxTBpa5bjVNpSMOd.9USpQ9nDRYX8/j6IT2ZMARdqxg04sxG','super-admin');
 
 INSERT INTO users_roles(user_id, role_id) VALUES(1, 1);
 
-INSERT INTO clients(login, logo, password) VALUES('exampleUser@example.com', '/test/test.png', '$2a$10$fJWr5Od5AWWgEARKrq7jaeh/Q4tUhHAyhvghkWxgbWpMgfAGCFZ.O');
+
+
+INSERT INTO permission(description, name) VALUES('testPermissionDesc', 'testPermissionName');
+INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 1);
+
+
 INSERT INTO invents(name, location, quality, category, picture, qr, client_id) VALUES('exampleInvent', 2, 2, 32, '/test/test.png', 'test_qr', 1);
 INSERT INTO location(location_name) values ('test');
 INSERT INTO quality(quality_name) values ('test');

@@ -1,6 +1,5 @@
 package kg.inai.inventoring.controller;
 
-
 import kg.inai.inventoring.entity.ERole;
 import kg.inai.inventoring.entity.Role;
 import kg.inai.inventoring.entity.User;
@@ -32,12 +31,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/admin/auth")
 public class AuthController {
+
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
-
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
@@ -45,6 +44,7 @@ public class AuthController {
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
     }
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
@@ -62,6 +62,8 @@ public class AuthController {
         return ResponseEntity
                 .ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
     }
+
+    // Использовать для создания user
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -72,29 +74,42 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        // Convert role strings to Role entities
+        // Create new user's account
+        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()));
+
+        Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
-        if (signUpRequest.getRole() == null || signUpRequest.getRole().isEmpty()) {
+        if (strRoles == null) {
             Role userRole = roleRepository.findByName(ERole.ROLE_MANAGER)
-                    .orElseThrow(() -> new RuntimeException("Error: Default role is not found."));
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
-            signUpRequest.getRole().forEach(role -> {
-                Role userRole = roleRepository.findByName(ERole.valueOf("ROLE_" + role.toUpperCase()))
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                roles.add(userRole);
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+                        break;
+
+                    case "super_admin":
+                        Role superAdminRole = roleRepository.findByName(ERole.ROLE_SUPER_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(superAdminRole);
+                        break;
+
+                    default:
+                        Role userRole = roleRepository.findByName(ERole.ROLE_MANAGER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                }
             });
         }
 
-        // Create new user's account
-        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()), roles);
-
+        user.setRoles(roles);
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
-
-
-
 }
