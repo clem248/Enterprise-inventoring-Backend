@@ -110,7 +110,7 @@ INSERT INTO permission(description, name) VALUES('testPermissionDesc', 'testPerm
 INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 1);
 
 
-INSERT INTO invents(name, location, quality, category, picture, qr, client_id) VALUES('exampleInvent', 2, 2, 32, '/test/test.png', 'test_qr', 1);
+INSERT INTO invents(name, location, quality, category, picture, qr, client_id) VALUES('exampleInvent', 1, 1, 1, '/test/test.png', 'test_qr', 1);
 INSERT INTO location(location_name) values ('test');
 INSERT INTO quality(quality_name) values ('test');
 INSERT INTO category(category_name) values ('test');

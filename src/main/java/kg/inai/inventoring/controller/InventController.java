@@ -1,11 +1,15 @@
 package kg.inai.inventoring.controller;
 
+import ch.qos.logback.classic.Logger;
 import kg.inai.inventoring.entity.Client;
 import kg.inai.inventoring.entity.Invents;
 import kg.inai.inventoring.excel.ExcelHandler;
 import kg.inai.inventoring.service.InventService;
 import kg.inai.inventoring.service.QRCodeGenerator;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -19,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/api/admin/invent")
 @Validated
@@ -26,16 +32,19 @@ public class InventController {
 
     private final InventService inventService;
     private final ExcelHandler excelHandler;
+    Logger logger = (Logger) LoggerFactory.getLogger(InventController.class);
 
     public InventController(InventService inventService, ExcelHandler excelHandler) {
         this.inventService = inventService;
         this.excelHandler = excelHandler;
     }
-
     @GetMapping
-    public List<Invents> getAllInvents(){
-        return inventService.getAllInvents();
+    public List<Invents> getAllInvents(@RequestParam int page, @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        System.out.println("getAllINVENTSDFJLHSLDIKFGHSALKDFHLKASUDH:KLASDHLKASJdhlk");
+        return inventService.getAllInvents(pageable);
     }
+
     @PostMapping("/save")
     public ResponseEntity<Invents> saveInvent(@RequestBody Invents invents) throws Exception{
         Invents createdInvent = inventService.createInvent(invents);

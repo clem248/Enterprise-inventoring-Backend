@@ -2,15 +2,22 @@ package kg.inai.inventoring.service;
 
 import java.util.List;
 
+import ch.qos.logback.classic.Logger;
+import kg.inai.inventoring.controller.InventController;
 import kg.inai.inventoring.entity.Category;
 import kg.inai.inventoring.entity.Client;
 import kg.inai.inventoring.entity.Invents;
 import kg.inai.inventoring.entity.Location;
 import kg.inai.inventoring.entity.Quality;
 import kg.inai.inventoring.repository.*;
-        import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+@Slf4j
 
 @Service
 public class InventService {
@@ -20,6 +27,8 @@ public class InventService {
     private final LocationRepository locationRepository;
     private final ClientRepository clientRepository;
     private final QRCodeGenerator qrCodeGenerator;
+    Logger logger = (Logger) LoggerFactory.getLogger(InventController.class);
+
 
     public InventService(InventRepository inventRepository,
                          CategoryRepository categoryRepository,
@@ -34,9 +43,11 @@ public class InventService {
         this.clientRepository = clientRepository;
         this.qrCodeGenerator = qrCodeGenerator;
     }
-    public List<Invents> getAllInvents(){
-        return inventRepository.findAll();
+    public List<Invents> getAllInvents(Pageable pageable) {
+        Page<Invents> page = inventRepository.findAll(pageable);
+        return page.getContent();
     }
+
     public Invents createInvent(Invents invent) throws Exception {
         // Предварительно сохраняем связанные сущности
         categoryRepository.save(invent.getCategory());
