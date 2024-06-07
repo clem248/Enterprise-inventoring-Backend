@@ -1,25 +1,20 @@
 package kg.inai.inventoring.controller;
 
-import ch.qos.logback.classic.Logger;
-import kg.inai.inventoring.entity.Client;
 import kg.inai.inventoring.entity.Invents;
-import kg.inai.inventoring.excel.ExcelHandler;
 import kg.inai.inventoring.service.InventService;
-import kg.inai.inventoring.service.QRCodeGenerator;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.time.LocalDateTime;
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,12 +26,9 @@ import java.util.Optional;
 public class InventController {
 
     private final InventService inventService;
-    private final ExcelHandler excelHandler;
-    Logger logger = (Logger) LoggerFactory.getLogger(InventController.class);
 
-    public InventController(InventService inventService, ExcelHandler excelHandler) {
+    public InventController(InventService inventService) {
         this.inventService = inventService;
-        this.excelHandler = excelHandler;
     }
     @GetMapping
     public List<Invents> getAllInvents(@RequestParam int page, @RequestParam int size) {
@@ -46,9 +38,22 @@ public class InventController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Invents> saveInvent(@RequestBody Invents invents) throws Exception{
+    public ResponseEntity<Resource> saveInvent(@RequestBody Invents invents) throws Exception {
         Invents createdInvent = inventService.createInvent(invents);
-        return new ResponseEntity<>(createdInvent, HttpStatus.CREATED);
+
+        String qrCodePath = createdInvent.getQr();
+        File qrCodeFile = new File(qrCodePath);
+
+        Resource resource = new FileSystemResource(qrCodeFile);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + qrCodeFile.getName() + "\"");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(qrCodeFile.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
     @GetMapping("/{id}")
     public ResponseEntity<Invents> getInventById(@PathVariable Long id){

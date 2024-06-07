@@ -24,7 +24,7 @@ public class ScanController {
 
         if (optionalInvent.isPresent()) {
             Invents invent = optionalInvent.get();
-            inventService.updateInventStatus(invent.getId(), "Present"); // Assuming "Present" is the status
+            inventService.updateInventStatus(invent.getId(), "Present");
             return ResponseEntity.ok("Invent status updated to Present.");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invent not found.");

@@ -10,7 +10,7 @@ public class Invents {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", unique = true)
+    @Column(name = "name")
     @NotNull(message = "Name must not be null")
     private String name;
 
@@ -18,28 +18,24 @@ public class Invents {
     private String picture;
 
     @Column(name = "qr")
-    @NotNull(message = "Client must not be null")
+    @NotNull(message = "QR must not be null")
     private String qr;
 
-    @ManyToOne
-    @JoinColumn(name = "category")
-    @NotNull(message = "Client must not be null")
-    private Category category;
+    @Column(name = "category")
+    @NotNull(message = "Category must not be null")
+    private String category;
 
-    @ManyToOne
-    @JoinColumn(name = "quality")
-    @NotNull(message = "Client must not be null")
-    private Quality quality;
+    @Column(name = "quality")
+    @NotNull(message = "Quality must not be null")
+    private String quality;
 
-    @ManyToOne
-    @JoinColumn(name = "location")
-    @NotNull(message = "Client must not be null")
-    private Location location;
+    @Column(name = "location")
+    @NotNull(message = "Location must not be null")
+    private String location;
 
-    @ManyToOne
-    @JoinColumn(name = "client_id")
+    @Column(name = "client")
     @NotNull(message = "Client must not be null")
-    private Client client;
+    private String client;
 
     @Column(name = "status")
     private String status;
@@ -47,7 +43,7 @@ public class Invents {
     public Invents() {
     }
 
-    public Invents(String name, String picture, String qr, Category category, Quality quality, Location location, Client client) {
+    public Invents(String name, String picture, String qr, String category, String quality, String location, String client, String status) {
         this.name = name;
         this.picture = picture;
         this.qr = qr;
@@ -55,6 +51,7 @@ public class Invents {
         this.quality = quality;
         this.location = location;
         this.client = client;
+        this.status = status;
     }
 
 
@@ -90,35 +87,35 @@ public class Invents {
         this.qr = qr;
     }
 
-    public Category getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
-    public Quality getQuality() {
+    public String getQuality() {
         return quality;
     }
 
-    public void setQuality(Quality quality) {
+    public void setQuality(String quality) {
         this.quality = quality;
     }
 
-    public Location getLocation() {
+    public String getLocation() {
         return location;
     }
 
-    public void setLocation(Location location) {
+    public void setLocation(String location) {
         this.location = location;
     }
 
-    public Client getClient() {
+    public String getClient() {
         return client;
     }
 
-    public void setClient(Client client) {
+    public void setClient(String client) {
         this.client = client;
     }
 
@@ -128,6 +125,21 @@ public class Invents {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "Invents{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", picture='" + picture + '\'' +
+                ", qr='" + qr + '\'' +
+                ", category='" + category + '\'' +
+                ", quality='" + quality + '\'' +
+                ", location='" + location + '\'' +
+                ", client='" + client + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }
 

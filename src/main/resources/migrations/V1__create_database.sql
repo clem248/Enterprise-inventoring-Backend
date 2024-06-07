@@ -8,20 +8,16 @@ create table clients
     password  varchar(255) not null
 );
 
-create table invents
-(
-    id        bigserial
-        primary key,
-    category  bigint not null,
-    location  bigint not null,
-    name      varchar(255) not null
-            unique,
-    picture   varchar(255),
-    qr        varchar(255) not null,
-    quality   bigint not null,
-    client_id bigint       not null
-            references clients,
-    status varchar(255)
+CREATE TABLE invents (
+     id       bigserial PRIMARY KEY,
+     category VARCHAR(255) NOT NULL,
+     client   VARCHAR(255) NOT NULL,
+     location VARCHAR(255) NOT NULL,
+     name     VARCHAR(255) NOT NULL,
+     picture  VARCHAR(255),
+     qr       VARCHAR(255) NOT NULL,
+     quality  VARCHAR(255) NOT NULL,
+     status   VARCHAR(255)
 );
 
 create table permission
@@ -110,7 +106,8 @@ INSERT INTO permission(description, name) VALUES('testPermissionDesc', 'testPerm
 INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 1);
 
 
-INSERT INTO invents(name, location, quality, category, picture, qr, client_id) VALUES('exampleInvent', 1, 1, 1, '/test/test.png', 'test_qr', 1);
+INSERT INTO invents(name, location, quality, category, picture, qr, client,status)
+VALUES('exampleInvent', 'test', 'test', 'test', '/test/test.png', 'test_qr', 'testClient','testStatus');
 INSERT INTO location(location_name) values ('test');
 INSERT INTO quality(quality_name) values ('test');
 INSERT INTO category(category_name) values ('test');

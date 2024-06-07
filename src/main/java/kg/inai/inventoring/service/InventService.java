@@ -1,70 +1,67 @@
 package kg.inai.inventoring.service;
 
-import java.util.List;
-
-import ch.qos.logback.classic.Logger;
-import kg.inai.inventoring.controller.InventController;
-import kg.inai.inventoring.entity.Category;
-import kg.inai.inventoring.entity.Client;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import kg.inai.inventoring.entity.Invents;
-import kg.inai.inventoring.entity.Location;
-import kg.inai.inventoring.entity.Quality;
 import kg.inai.inventoring.repository.*;
+import kg.inai.inventoring.service.QRCodeGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-@Slf4j
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.util.*;
 
+@Slf4j
 @Service
 public class InventService {
     private final InventRepository inventRepository;
-    private final CategoryRepository categoryRepository;
-    private final QualityRepository qualityRepository;
-    private final LocationRepository locationRepository;
-    private final ClientRepository clientRepository;
-    private final QRCodeGenerator qrCodeGenerator;
-    Logger logger = (Logger) LoggerFactory.getLogger(InventController.class);
 
-
-    public InventService(InventRepository inventRepository,
-                         CategoryRepository categoryRepository,
-                         QualityRepository qualityRepository,
-                         LocationRepository locationRepository,
-                         ClientRepository clientRepository,
-                         QRCodeGenerator qrCodeGenerator) {
+    public InventService(InventRepository inventRepository) {
         this.inventRepository = inventRepository;
-        this.categoryRepository = categoryRepository;
-        this.qualityRepository = qualityRepository;
-        this.locationRepository = locationRepository;
-        this.clientRepository = clientRepository;
-        this.qrCodeGenerator = qrCodeGenerator;
     }
+
     public List<Invents> getAllInvents(Pageable pageable) {
         Page<Invents> page = inventRepository.findAll(pageable);
         return page.getContent();
     }
 
     public Invents createInvent(Invents invent) throws Exception {
-        // Предварительно сохраняем связанные сущности
-        categoryRepository.save(invent.getCategory());
-        qualityRepository.save(invent.getQuality());
-        locationRepository.save(invent.getLocation());
-        clientRepository.save(invent.getClient());
 
-        // Сохраняем основную сущность
         Invents savedInvent = inventRepository.save(invent);
 
-        // Генерируем QR-код с URL
-        String qrText = "http://localhost:8080/api/invent/scan?inventId=" + savedInvent.getId();
-        String qrPath = qrCodeGenerator.generateQRCodeWithUrl(qrText, savedInvent.getName(), 350, 350);
+        String qrText = savedInvent.toString();
+        String qrPath = generateQRCodeWithUrl(qrText, savedInvent.getName(), 350, 350);
         savedInvent.setQr(qrPath);
 
-        // Обновляем сущность с QR-кодом
         return inventRepository.save(savedInvent);
+    }
+
+    private static final String QR_CODE_IMAGE_DIR = "./";
+
+    public String generateQRCodeWithUrl(String text, String fileName, int width, int height) throws Exception {
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+
+        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+        BitMatrix bitMatrix = multiFormatWriter.encode(text, BarcodeFormat.QR_CODE, width, height, hints);
+
+        String uniqueID = UUID.randomUUID().toString();
+
+        String qrCodeFileName = fileName + "1_" + uniqueID + ".png";
+        String qrCodeImagePath = QR_CODE_IMAGE_DIR + qrCodeFileName;
+
+        Path path = FileSystems.getDefault().getPath(qrCodeImagePath);
+        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
+
+        return qrCodeImagePath;
     }
     public Optional<Invents> getInventByQr(String qr) {
         return inventRepository.findByQr(qr);
@@ -80,7 +77,6 @@ public class InventService {
             return null;
         }
     }
-
 
     public Optional<Invents> getInventById(Long id){
         return inventRepository.findById(id);
