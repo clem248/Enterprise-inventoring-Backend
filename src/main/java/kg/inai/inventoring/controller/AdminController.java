@@ -2,10 +2,7 @@ package kg.inai.inventoring.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import kg.inai.inventoring.entity.Category;
 import kg.inai.inventoring.entity.Quality;
 import kg.inai.inventoring.entity.Location;
@@ -24,26 +21,31 @@ public class AdminController {
     private CategoryService categoryService;
 
     @Autowired
-    private QualityService qualityService;
-
-    @Autowired
     private LocationService locationService;
 
-    @GetMapping("/categories")
-    public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+    // Другие методы контроллера
+
+    @PostMapping("/categories")
+    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+        Category createdCategory = categoryService.createCategory(category);
+        return ResponseEntity.ok(createdCategory);
     }
 
-    @GetMapping("/qualities")
-    public ResponseEntity<List<Quality>> getAllQualities() {
-        List<Quality> qualities = qualityService.getAllQualities();
-        return ResponseEntity.ok(qualities);
+    @PostMapping("/locations")
+    public ResponseEntity<Location> createLocation(@RequestBody Location location) {
+        Location createdLocation = locationService.createLocation(location);
+        return ResponseEntity.ok(createdLocation);
     }
 
-    @GetMapping("/locations")
-    public ResponseEntity<List<Location>> getAllLocations() {
-        List<Location> locations = locationService.getAllLocations();
-        return ResponseEntity.ok(locations);
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/locations/{id}")
+    public ResponseEntity<?> deleteLocation(@PathVariable Long id) {
+        locationService.deleteLocation(id);
+        return ResponseEntity.ok().build();
     }
 }

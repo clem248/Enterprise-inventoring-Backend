@@ -15,4 +15,11 @@ public class LocationService {
     public List<Location> getAllLocations() {
         return locationRepository.findAll();
     }
+    public Location createLocation(Location location) {
+        return locationRepository.save(location);
+    }
+
+    public void deleteLocation(Long id) {
+        locationRepository.deleteById(id);
+    }
 }
