@@ -22,8 +22,28 @@ public class AdminController {
 
     @Autowired
     private LocationService locationService;
+    @Autowired
+    private QualityService qualityService;
 
     // Другие методы контроллера
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<Category>> getAllCategories() {
+        List<Category> categories = categoryService.getAllCategories();
+        return ResponseEntity.ok(categories);
+    }
+    @GetMapping("/qualities")
+    public ResponseEntity<List<Quality>> getAllQualities() {
+        List<Quality> qualities = qualityService.getAllQualities();
+        return ResponseEntity.ok(qualities);
+    }
+
+    @GetMapping("/locations")
+    public ResponseEntity<List<Location>> getAllLocations() {
+        List<Location> locations = locationService.getAllLocations();
+        return ResponseEntity.ok(locations);
+    }
+
 
     @PostMapping("/categories")
     public ResponseEntity<Category> createCategory(@RequestBody Category category) {
