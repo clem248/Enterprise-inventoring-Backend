@@ -5,7 +5,10 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import kg.inai.inventoring.entity.Category;
 import kg.inai.inventoring.entity.Invents;
+import kg.inai.inventoring.entity.Location;
+import kg.inai.inventoring.entity.Quality;
 import kg.inai.inventoring.repository.*;
 import kg.inai.inventoring.service.QRCodeGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -23,22 +26,46 @@ import java.util.*;
 @Service
 public class InventService {
     private final InventRepository inventRepository;
-
-    public InventService(InventRepository inventRepository) {
+    private final CategoryRepository categoryRepository;
+    private final QualityRepository qualityRepository;
+    private final LocationRepository locationRepository;
+    private final ClientRepository clientRepository;
+    private final QRCodeGenerator qrCodeGenerator;
+    public InventService(InventRepository inventRepository,
+                         CategoryRepository categoryRepository,
+                         QualityRepository qualityRepository,
+                         LocationRepository locationRepository,
+                         ClientRepository clientRepository,
+                         QRCodeGenerator qrCodeGenerator) {
         this.inventRepository = inventRepository;
+        this.categoryRepository = categoryRepository;
+        this.qualityRepository = qualityRepository;
+        this.locationRepository = locationRepository;
+        this.clientRepository = clientRepository;
+        this.qrCodeGenerator = qrCodeGenerator;
     }
-
     public List<Invents> getAllInvents(Pageable pageable) {
         Page<Invents> page = inventRepository.findAll(pageable);
         return page.getContent();
     }
 
     public Invents createInvent(Invents invent) throws Exception {
+        // Найти связанные сущности по именам
+        Category category = categoryRepository.findByCategoryName(invent.getCategory().getCategoryName())
+                .orElseThrow(() -> new Exception("Category not found"));
+        Quality quality = qualityRepository.findByQualityName(invent.getQuality().getQualityName())
+                .orElseThrow(() -> new Exception("Quality not found"));
+        Location location = locationRepository.findByLocationName(invent.getLocation().getLocationName())
+                .orElseThrow(() -> new Exception("Location not found"));
+
+        invent.setCategory(category);
+        invent.setQuality(quality);
+        invent.setLocation(location);
 
         Invents savedInvent = inventRepository.save(invent);
 
-        String qrText = savedInvent.toString();
-        String qrPath = generateQRCodeWithUrl(qrText, savedInvent.getName(), 350, 350);
+        String qrText = "http://localhost:8080/api/invent/scan?inventId=" + savedInvent.getId();
+        String qrPath = qrCodeGenerator.generateQRCodeWithUrl(qrText, savedInvent.getName(), 350, 350);
         savedInvent.setQr(qrPath);
 
         return inventRepository.save(savedInvent);

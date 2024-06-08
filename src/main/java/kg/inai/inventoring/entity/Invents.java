@@ -21,17 +21,20 @@ public class Invents {
     @NotNull(message = "QR must not be null")
     private String qr;
 
-    @Column(name = "category")
+    @ManyToOne
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
     @NotNull(message = "Category must not be null")
-    private String category;
+    private Category category;
 
-    @Column(name = "quality")
+    @ManyToOne
+    @JoinColumn(name = "quality_id", referencedColumnName = "id")
     @NotNull(message = "Quality must not be null")
-    private String quality;
+    private Quality quality;
 
-    @Column(name = "location")
+    @ManyToOne
+    @JoinColumn(name = "location_id", referencedColumnName = "id")
     @NotNull(message = "Location must not be null")
-    private String location;
+    private Location location;
 
     @Column(name = "client")
     @NotNull(message = "Client must not be null")
@@ -43,7 +46,7 @@ public class Invents {
     public Invents() {
     }
 
-    public Invents(String name, String picture, String qr, String category, String quality, String location, String client, String status) {
+    public Invents(String name, String picture, String qr, Category category, Quality quality, Location location, String client, String status) {
         this.name = name;
         this.picture = picture;
         this.qr = qr;
@@ -53,7 +56,6 @@ public class Invents {
         this.client = client;
         this.status = status;
     }
-
 
     public Long getId() {
         return id;
@@ -87,27 +89,27 @@ public class Invents {
         this.qr = qr;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
-    public String getQuality() {
+    public Quality getQuality() {
         return quality;
     }
 
-    public void setQuality(String quality) {
+    public void setQuality(Quality quality) {
         this.quality = quality;
     }
 
-    public String getLocation() {
+    public Location getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(Location location) {
         this.location = location;
     }
 

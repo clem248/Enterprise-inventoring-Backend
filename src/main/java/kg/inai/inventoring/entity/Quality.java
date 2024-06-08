@@ -12,22 +12,29 @@ public class Quality {
     private Long id;
 
     @Column(name = "quality_name")
-    private String name;
+    private String qualityName;
 
-    public Quality(Long id, String name) {
-        this.id = id;
-        this.name = name;
+    public Quality(String qualityName) {
+        this.qualityName = qualityName;
     }
 
     public Quality() {
 
     }
 
-    public String getName() {
-        return name;
+    public Long getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getQualityName() {
+        return qualityName;
+    }
+
+    public void setQualityName(String qualityName) {
+        this.qualityName = qualityName;
     }
 }

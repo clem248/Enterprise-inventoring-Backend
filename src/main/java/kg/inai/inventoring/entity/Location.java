@@ -7,24 +7,20 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name="location")
-
+@Table(name = "location")
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "location_name")
-    private String location_name;
+    private String locationName;
 
-    public Location(Long id, String location_name) {
-        this.id = id;
-        this.location_name = location_name;
+    public Location() {}
+
+    public Location(String locationName) {
+        this.locationName = locationName;
     }
-
-    public Location() {
-
-    }
-
 
     public Long getId() {
         return id;
@@ -34,11 +30,11 @@ public class Location {
         this.id = id;
     }
 
-    public String getLocation() {
-        return location_name;
+    public String getLocationName() {
+        return locationName;
     }
 
-    public void setLocation(String location_name) {
-        this.location_name = location_name;
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
     }
 }

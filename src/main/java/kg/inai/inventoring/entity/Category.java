@@ -11,7 +11,7 @@ public class Category {
     private Long id;
 
     @Column(name = "category_name")
-    private String category_name;
+    private String categoryName;
 
     public Category() {
 
@@ -25,16 +25,16 @@ public class Category {
         this.id = id;
     }
 
-    public String getCategory() {
-        return category_name;
-    }
-
-    public void setCategory(String category) {
-        this.category_name = category;
-    }
-
-    public Category(Long id, String category) {
+    public Category(Long id, String categoryName) {
         this.id = id;
-        this.category_name = category;
+        this.categoryName = categoryName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }

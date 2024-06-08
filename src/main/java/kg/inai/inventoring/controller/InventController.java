@@ -33,7 +33,6 @@ public class InventController {
     @GetMapping
     public List<Invents> getAllInvents(@RequestParam int page, @RequestParam int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        System.out.println("getAllINVENTSDFJLHSLDIKFGHSALKDFHLKASUDH:KLASDHLKASJdhlk");
         return inventService.getAllInvents(pageable);
     }
 
