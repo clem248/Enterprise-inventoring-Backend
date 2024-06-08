@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -49,6 +50,7 @@ public class InventService {
         return page.getContent();
     }
 
+
     public Invents createInvent(Invents invent) throws Exception {
         // Найти связанные сущности по именам
         Category category = categoryRepository.findByCategoryName(invent.getCategory().getCategoryName())
@@ -64,12 +66,17 @@ public class InventService {
 
         Invents savedInvent = inventRepository.save(invent);
 
-        String qrText = "http://localhost:8080/api/invent/scan?inventId=" + savedInvent.getId();
-        String qrPath = qrCodeGenerator.generateQRCodeWithUrl(qrText, savedInvent.getName(), 350, 350);
+        // Сериализация объекта в строку JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String inventJson = objectMapper.writeValueAsString(savedInvent);
+
+        // Создание QR-кода из JSON-строки
+        String qrPath = generateQRCodeWithUrl(inventJson, savedInvent.getName(), 350, 350);
         savedInvent.setQr(qrPath);
 
         return inventRepository.save(savedInvent);
     }
+
 
     private static final String QR_CODE_IMAGE_DIR = "./";
 

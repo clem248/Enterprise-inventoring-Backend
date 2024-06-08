@@ -2,11 +2,12 @@ package kg.inai.inventoring.entity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Entity
 @Table(name="quality")
 
-public class Quality {
+public class Quality implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

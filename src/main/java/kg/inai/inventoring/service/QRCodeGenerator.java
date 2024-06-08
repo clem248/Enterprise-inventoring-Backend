@@ -13,11 +13,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class QRCodeGenerator {
 
-    private static final String QR_CODE_IMAGE_DIR = "./qrcodes/";
+    private static final String QR_CODE_IMAGE_DIR = "./";
 
     public String generateQRCodeWithUrl(String text, String fileName, int width, int height) throws Exception {
         Map<EncodeHintType, Object> hints = new HashMap<>();
@@ -26,10 +27,14 @@ public class QRCodeGenerator {
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
         BitMatrix bitMatrix = multiFormatWriter.encode(text, BarcodeFormat.QR_CODE, width, height, hints);
 
-        String qrCodeImagePath = QR_CODE_IMAGE_DIR + fileName + ".png";
+        String uniqueID = UUID.randomUUID().toString();
+        String qrCodeFileName = fileName + "_" + uniqueID + ".png";
+        String qrCodeImagePath = QR_CODE_IMAGE_DIR + qrCodeFileName;
+
         Path path = FileSystems.getDefault().getPath(qrCodeImagePath);
         MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
 
         return qrCodeImagePath;
     }
+
 }

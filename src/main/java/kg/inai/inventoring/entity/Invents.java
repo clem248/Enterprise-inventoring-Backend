@@ -2,10 +2,11 @@ package kg.inai.inventoring.entity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "invents")
-public class Invents {
+public class Invents implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,17 +23,17 @@ public class Invents {
     private String qr;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @JoinColumn(name = "category", referencedColumnName = "category_name")
     @NotNull(message = "Category must not be null")
     private Category category;
 
     @ManyToOne
-    @JoinColumn(name = "quality_id", referencedColumnName = "id")
+    @JoinColumn(name = "quality", referencedColumnName = "quality_name")
     @NotNull(message = "Quality must not be null")
     private Quality quality;
 
     @ManyToOne
-    @JoinColumn(name = "location_id", referencedColumnName = "id")
+    @JoinColumn(name = "location", referencedColumnName = "location_name")
     @NotNull(message = "Location must not be null")
     private Location location;
 
