@@ -132,4 +132,7 @@ public class InventService {
             return null;
         }
     }
+    public Page<Invents> findByFilters(String category, String location, String client, Pageable pageable) {
+        return inventRepository.findByFilters(category, location, client, pageable);
+    }
 }
