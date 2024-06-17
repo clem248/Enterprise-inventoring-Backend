@@ -65,7 +65,7 @@ CREATE TABLE quality (
 /* ROLES and TEST info */
 INSERT INTO roles(name) VALUES('ROLE_SUPER_ADMIN');
 INSERT INTO roles(name) VALUES('ROLE_ADMIN');
-INSERT INTO roles(name) VALUES('ROLE_CLIENT');
+INSERT INTO roles(name) VALUES('ROLE_MANAGER');
 
 INSERT INTO clients(full_name, login, password)
 VALUES ('super-admin', 'super-admin', '$2a$10$wScCezWbw0GlYa606P9GquBcXoaandeYIGQuLWRWJD4Lmn4p55oRy');
