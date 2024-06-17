@@ -16,11 +16,14 @@ import kg.inai.inventoring.repository.LocationRepository;
 import kg.inai.inventoring.repository.ClientRepository;
 import kg.inai.inventoring.service.QRCodeGenerator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
@@ -35,6 +38,9 @@ public class InventService {
     private final LocationRepository locationRepository;
     private final ClientRepository clientRepository;
     private final QRCodeGenerator qrCodeGenerator;
+
+    @Autowired
+    FileService fileService;
 
     public InventService(InventRepository inventRepository,
                          CategoryRepository categoryRepository,
@@ -54,7 +60,7 @@ public class InventService {
         return inventRepository.findAll();
     }
 
-    public Invents createInvent(Invents invent) throws Exception {
+    public Invents createInvent(Invents invent, MultipartFile file) throws Exception {
         // Найти связанные сущности по именам
         Category category = categoryRepository.findByCategoryName(invent.getCategory().getCategoryName())
                 .orElseThrow(() -> new Exception("Category not found"));
@@ -66,6 +72,9 @@ public class InventService {
         invent.setCategory(category);
         invent.setQuality(quality);
         invent.setLocation(location);
+        String cloudinaryUrl = fileService.storeFile(file);
+        invent.setPicture(cloudinaryUrl);
+
 
         Invents savedInvent = inventRepository.save(invent);
 
@@ -76,6 +85,8 @@ public class InventService {
         // Создание QR-кода из JSON-строки
         String qrPath = generateQRCodeWithUrl(inventJson, savedInvent.getName(), 350, 350);
         savedInvent.setQr(qrPath);
+
+
 
         return inventRepository.save(savedInvent);
     }

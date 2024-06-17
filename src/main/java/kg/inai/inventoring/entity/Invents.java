@@ -19,7 +19,6 @@ public class Invents implements Serializable {
     private String picture;
 
     @Column(name = "qr")
-    @NotNull(message = "QR must not be null")
     private String qr;
 
     @ManyToOne

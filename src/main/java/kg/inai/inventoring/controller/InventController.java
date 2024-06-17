@@ -1,6 +1,7 @@
 package kg.inai.inventoring.controller;
 
-import kg.inai.inventoring.entity.Invents;
+import kg.inai.inventoring.dto.InventsDTO;
+import kg.inai.inventoring.entity.*;
 import kg.inai.inventoring.service.InventService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,9 +17,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -45,8 +48,8 @@ public class InventController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Resource> saveInvent(@RequestBody Invents invents) throws Exception {
-        Invents createdInvent = inventService.createInvent(invents);
+    public ResponseEntity<Resource> saveInvent(@ModelAttribute @Valid Invents invents, @RequestParam("file") MultipartFile file) throws Exception {
+        Invents createdInvent = inventService.createInvent(invents, file);
 
         String qrCodePath = createdInvent.getQr();
         File qrCodeFile = new File(qrCodePath);

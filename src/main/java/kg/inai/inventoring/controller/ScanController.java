@@ -31,13 +31,13 @@ public class ScanController {
         }
     }
 
-    @PostMapping("/save")
-    public ResponseEntity<Invents> saveInvent(@RequestBody Invents invents) {
-        try {
-            Invents createdInvent = inventService.createInvent(invents);
-            return new ResponseEntity<>(createdInvent, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @PostMapping("/save")
+//    public ResponseEntity<Invents> saveInvent(@RequestBody Invents invents) {
+//        try {
+//            Invents createdInvent = inventService.createInvent(invents);
+//            return new ResponseEntity<>(createdInvent, HttpStatus.CREATED);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 }
