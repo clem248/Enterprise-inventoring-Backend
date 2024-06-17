@@ -7,12 +7,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,11 +19,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 @Slf4j
 @CrossOrigin
 @RestController
@@ -41,9 +40,8 @@ public class InventController {
     }
 
     @GetMapping
-    public List<Invents> getAllInvents(@RequestParam int page, @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        return inventService.getAllInvents(pageable);
+    public List<Invents> getAllInvents() {
+        return inventService.getAllInvents();
     }
 
     @PostMapping("/save")
@@ -77,41 +75,28 @@ public class InventController {
         Invents invents = inventService.updateInvent(id, updatedInvent);
         return (invents != null) ? new ResponseEntity<>(invents, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
     @GetMapping("/download")
-    public ResponseEntity<String> downloadInvents(
-            HttpServletResponse response,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortField,
-            @RequestParam(defaultValue = "asc") String sortOrder,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) String client) {
+    public ResponseEntity<Resource> downloadInvents() {
+        List<Invents> inventsList = inventService.getAllInvents();
 
-        List<Invents> inventsList;
+        log.info("Number of invents: {}", inventsList.size());
 
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortOrder), sortField);
-        if (category != null || location != null || client != null) {
-            inventsList = inventService.findByFilters(category, location, client, pageable).getContent();
-        } else {
-            inventsList = inventService.getAllInvents(pageable);
-        }
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            writeToExcel(byteArrayOutputStream, inventsList);
+            ByteArrayResource resource = new ByteArrayResource(byteArrayOutputStream.toByteArray());
 
-        try {
-            response.setContentType("application/vnd.ms-excel");
-            response.setHeader("Content-Disposition", "attachment; filename=invents.xlsx");
-
-            writeToExcel(response.getOutputStream(), inventsList);
-            response.flushBuffer();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invents.xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentLength(resource.contentLength())
+                    .body(resource);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create Excel file");
+            log.error("Failed to create Excel file", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-
-        return ResponseEntity.ok("Excel file created successfully");
     }
 
-    private void writeToExcel(ServletOutputStream outputStream, List<Invents> inventsList) throws IOException {
+    private void writeToExcel(ByteArrayOutputStream outputStream, List<Invents> inventsList) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Invents");
 
@@ -123,14 +108,17 @@ public class InventController {
         headerRow.createCell(3).setCellValue("Location");
         headerRow.createCell(4).setCellValue("Client");
         headerRow.createCell(5).setCellValue("Date");
+        headerRow.createCell(6).setCellValue("Quality");
 
         for (Invents invent : inventsList) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(invent.getId());
-            row.createCell(1).setCellValue(invent.getName());
-            row.createCell(2).setCellValue(invent.getCategory().toString());
-            row.createCell(3).setCellValue(invent.getLocation().toString());
-            row.createCell(4).setCellValue(invent.getClient());
+            row.createCell(0).setCellValue(Optional.ofNullable(invent.getId()).orElse(0L));
+            row.createCell(1).setCellValue(Optional.ofNullable(invent.getName()).orElse("null"));
+            row.createCell(2).setCellValue(Optional.ofNullable(invent.getCategory()).map(c -> c.getCategoryName()).orElse("null"));
+            row.createCell(3).setCellValue(Optional.ofNullable(invent.getLocation()).map(l -> l.getLocationName()).orElse("null"));
+            row.createCell(4).setCellValue(Optional.ofNullable(invent.getClient()).orElse("null"));
+            row.createCell(5).setCellValue(LocalDateTime.now());
+            row.createCell(6).setCellValue(Optional.ofNullable(invent.getQuality()).map(l -> l.getQualityName()).orElse("null"));
         }
 
         workbook.write(outputStream);

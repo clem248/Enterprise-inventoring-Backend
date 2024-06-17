@@ -9,29 +9,33 @@ import kg.inai.inventoring.entity.Category;
 import kg.inai.inventoring.entity.Invents;
 import kg.inai.inventoring.entity.Location;
 import kg.inai.inventoring.entity.Quality;
-import kg.inai.inventoring.repository.*;
+import kg.inai.inventoring.repository.InventRepository;
+import kg.inai.inventoring.repository.CategoryRepository;
+import kg.inai.inventoring.repository.QualityRepository;
+import kg.inai.inventoring.repository.LocationRepository;
+import kg.inai.inventoring.repository.ClientRepository;
 import kg.inai.inventoring.service.QRCodeGenerator;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
 public class InventService {
+
     private final InventRepository inventRepository;
     private final CategoryRepository categoryRepository;
     private final QualityRepository qualityRepository;
     private final LocationRepository locationRepository;
     private final ClientRepository clientRepository;
     private final QRCodeGenerator qrCodeGenerator;
+
     public InventService(InventRepository inventRepository,
                          CategoryRepository categoryRepository,
                          QualityRepository qualityRepository,
@@ -45,11 +49,10 @@ public class InventService {
         this.clientRepository = clientRepository;
         this.qrCodeGenerator = qrCodeGenerator;
     }
-    public List<Invents> getAllInvents(Pageable pageable) {
-        Page<Invents> page = inventRepository.findAll(pageable);
-        return page.getContent();
-    }
 
+    public List<Invents> getAllInvents() {
+        return inventRepository.findAll();
+    }
 
     public Invents createInvent(Invents invent) throws Exception {
         // Найти связанные сущности по именам
@@ -77,7 +80,6 @@ public class InventService {
         return inventRepository.save(savedInvent);
     }
 
-
     private static final String QR_CODE_IMAGE_DIR = "./";
 
     public String generateQRCodeWithUrl(String text, String fileName, int width, int height) throws Exception {
@@ -97,6 +99,7 @@ public class InventService {
 
         return qrCodeImagePath;
     }
+
     public Optional<Invents> getInventByQr(String qr) {
         return inventRepository.findByQr(qr);
     }
@@ -112,13 +115,13 @@ public class InventService {
         }
     }
 
-    public Optional<Invents> getInventById(Long id){
+    public Optional<Invents> getInventById(Long id) {
         return inventRepository.findById(id);
     }
 
-    public Invents updateInvent(Long id, Invents updatedInvent){
+    public Invents updateInvent(Long id, Invents updatedInvent) {
         Optional<Invents> existingInvent = inventRepository.findById(id);
-        if(existingInvent.isPresent()){
+        if (existingInvent.isPresent()) {
             Invents invents = existingInvent.get();
             invents.setCategory(updatedInvent.getCategory());
             invents.setClient(updatedInvent.getClient());
@@ -128,10 +131,11 @@ public class InventService {
             invents.setQr(updatedInvent.getQr());
             invents.setQuality(updatedInvent.getQuality());
             return inventRepository.save(invents);
-        }else{
+        } else {
             return null;
         }
     }
+
     public Page<Invents> findByFilters(String category, String location, String client, Pageable pageable) {
         return inventRepository.findByFilters(category, location, client, pageable);
     }
