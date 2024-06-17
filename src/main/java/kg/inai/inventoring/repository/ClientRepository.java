@@ -10,14 +10,20 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.LockModeType;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
     Optional<Client> findByLogin(String login);
 
+    Optional<Client> findClientByFullName(String fullname);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Client getClientByLogin(String login);
+
+    @Override
+    List<Client> findAll();
 
     boolean existsByLogin(String login);
 

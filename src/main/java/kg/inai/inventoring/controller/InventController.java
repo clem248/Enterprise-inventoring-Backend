@@ -48,22 +48,9 @@ public class InventController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Resource> saveInvent(@ModelAttribute @Valid Invents invents, @RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<Invents> saveInvent(@ModelAttribute @Valid Invents invents, @RequestParam("file") MultipartFile file) throws Exception {
         Invents createdInvent = inventService.createInvent(invents, file);
-
-        String qrCodePath = createdInvent.getQr();
-        File qrCodeFile = new File(qrCodePath);
-
-        Resource resource = new FileSystemResource(qrCodeFile);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + qrCodeFile.getName() + "\"");
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(qrCodeFile.length())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+        return new ResponseEntity<>(createdInvent, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -119,7 +106,7 @@ public class InventController {
             row.createCell(1).setCellValue(Optional.ofNullable(invent.getName()).orElse("null"));
             row.createCell(2).setCellValue(Optional.ofNullable(invent.getCategory()).map(c -> c.getCategoryName()).orElse("null"));
             row.createCell(3).setCellValue(Optional.ofNullable(invent.getLocation()).map(l -> l.getLocationName()).orElse("null"));
-            row.createCell(4).setCellValue(Optional.ofNullable(invent.getClient()).orElse("null"));
+            row.createCell(4).setCellValue(Optional.ofNullable(invent.getClient()).map(c -> c.getFullName()).orElse("null"));
             row.createCell(5).setCellValue(LocalDateTime.now());
             row.createCell(6).setCellValue(Optional.ofNullable(invent.getQuality()).map(l -> l.getQualityName()).orElse("null"));
         }

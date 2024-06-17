@@ -36,9 +36,10 @@ public class Invents implements Serializable {
     @NotNull(message = "Location must not be null")
     private Location location;
 
-    @Column(name = "client")
+    @ManyToOne
+    @JoinColumn(name = "clients", referencedColumnName = "full_name")
     @NotNull(message = "Client must not be null")
-    private String client;
+    private Client client;
 
     @Column(name = "status")
     private String status;
@@ -46,7 +47,7 @@ public class Invents implements Serializable {
     public Invents() {
     }
 
-    public Invents(String name, String picture, String qr, Category category, Quality quality, Location location, String client, String status) {
+    public Invents(String name, String picture, String qr, Category category, Quality quality, Location location, Client client, String status) {
         this.name = name;
         this.picture = picture;
         this.qr = qr;
@@ -113,11 +114,11 @@ public class Invents implements Serializable {
         this.location = location;
     }
 
-    public String getClient() {
+    public Client getClient() {
         return client;
     }
 
-    public void setClient(String client) {
+    public void setClient(Client client) {
         this.client = client;
     }
 

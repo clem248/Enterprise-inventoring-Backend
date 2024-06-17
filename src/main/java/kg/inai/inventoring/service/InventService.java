@@ -1,14 +1,12 @@
 package kg.inai.inventoring.service;
 
+import com.cloudinary.Cloudinary;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
-import kg.inai.inventoring.entity.Category;
-import kg.inai.inventoring.entity.Invents;
-import kg.inai.inventoring.entity.Location;
-import kg.inai.inventoring.entity.Quality;
+import kg.inai.inventoring.entity.*;
 import kg.inai.inventoring.repository.InventRepository;
 import kg.inai.inventoring.repository.CategoryRepository;
 import kg.inai.inventoring.repository.QualityRepository;
@@ -25,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -38,6 +37,7 @@ public class InventService {
     private final LocationRepository locationRepository;
     private final ClientRepository clientRepository;
     private final QRCodeGenerator qrCodeGenerator;
+    private final Cloudinary cloudinary;
 
     @Autowired
     FileService fileService;
@@ -47,13 +47,15 @@ public class InventService {
                          QualityRepository qualityRepository,
                          LocationRepository locationRepository,
                          ClientRepository clientRepository,
-                         QRCodeGenerator qrCodeGenerator) {
+                         QRCodeGenerator qrCodeGenerator,
+                         Cloudinary cloudinary) {
         this.inventRepository = inventRepository;
         this.categoryRepository = categoryRepository;
         this.qualityRepository = qualityRepository;
         this.locationRepository = locationRepository;
         this.clientRepository = clientRepository;
         this.qrCodeGenerator = qrCodeGenerator;
+        this.cloudinary = cloudinary;
     }
 
     public List<Invents> getAllInvents() {
@@ -61,7 +63,6 @@ public class InventService {
     }
 
     public Invents createInvent(Invents invent, MultipartFile file) throws Exception {
-        // Найти связанные сущности по именам
         Category category = categoryRepository.findByCategoryName(invent.getCategory().getCategoryName())
                 .orElseThrow(() -> new Exception("Category not found"));
         Quality quality = qualityRepository.findByQualityName(invent.getQuality().getQualityName())
@@ -69,46 +70,52 @@ public class InventService {
         Location location = locationRepository.findByLocationName(invent.getLocation().getLocationName())
                 .orElseThrow(() -> new Exception("Location not found"));
 
+        // Поиск или создание клиента
+        Client client = findOrCreateClient(invent.getClient().getFullName());
+
         invent.setCategory(category);
         invent.setQuality(quality);
         invent.setLocation(location);
+        invent.setClient(client);
+
         String cloudinaryUrl = fileService.storeFile(file);
         invent.setPicture(cloudinaryUrl);
 
-
-        Invents savedInvent = inventRepository.save(invent);
-
-        // Сериализация объекта в строку JSON
         ObjectMapper objectMapper = new ObjectMapper();
-        String inventJson = objectMapper.writeValueAsString(savedInvent);
+        String inventJson = objectMapper.writeValueAsString(invent);
 
-        // Создание QR-кода из JSON-строки
-        String qrPath = generateQRCodeWithUrl(inventJson, savedInvent.getName(), 350, 350);
-        savedInvent.setQr(qrPath);
+        String qrCloudinaryUrl = generateQRCodeWithUrl(inventJson, 350, 350);
+        invent.setQr(qrCloudinaryUrl);
 
-
-
-        return inventRepository.save(savedInvent);
+        return inventRepository.save(invent);
     }
 
-    private static final String QR_CODE_IMAGE_DIR = "./";
+    private Client findOrCreateClient(String fullName) {
+        // Попытка найти клиента по полному имени
+        Optional<Client> existingClient = clientRepository.findClientByFullName(fullName);
+        if (existingClient.isPresent()) {
+            return existingClient.get();
+        } else {
+            // Если клиент не найден, создаем нового
+            Client newClient = new Client();
+            newClient.setFullName(fullName); // Установка имени клиента
+            // Здесь можно установить другие свойства клиента, если они есть
+            return clientRepository.save(newClient);
+        }
+    }
 
-    public String generateQRCodeWithUrl(String text, String fileName, int width, int height) throws Exception {
+
+    public String generateQRCodeWithUrl(String text, int width, int height) throws Exception {
         Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+        BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, width, height, hints);
+        Path tempFile = Files.createTempFile("QRCode", ".png");
+        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", tempFile);
 
-        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
-        BitMatrix bitMatrix = multiFormatWriter.encode(text, BarcodeFormat.QR_CODE, width, height, hints);
+        Map uploadResult = cloudinary.uploader().upload(tempFile.toFile(), Map.of("public_id", UUID.randomUUID().toString()));
+        Files.delete(tempFile);
 
-        String uniqueID = UUID.randomUUID().toString();
-
-        String qrCodeFileName = fileName + "1_" + uniqueID + ".png";
-        String qrCodeImagePath = QR_CODE_IMAGE_DIR + qrCodeFileName;
-
-        Path path = FileSystems.getDefault().getPath(qrCodeImagePath);
-        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
-
-        return qrCodeImagePath;
+        return uploadResult.get("url").toString();
     }
 
     public Optional<Invents> getInventByQr(String qr) {

@@ -8,7 +8,7 @@ CREATE TABLE clients (
 CREATE TABLE invents (
                          id       bigserial PRIMARY KEY,
                          category VARCHAR(255) NOT NULL,
-                         client   VARCHAR(255) NOT NULL,
+                         clients   VARCHAR(255) NOT NULL,
                          location VARCHAR(255) NOT NULL,
                          name     VARCHAR(255) NOT NULL,
                          picture  VARCHAR(255),
@@ -78,7 +78,7 @@ INSERT INTO users_roles(user_id, role_id) VALUES(1, 1);
 INSERT INTO permission(description, name) VALUES('testPermissionDesc', 'testPermissionName');
 INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 1);
 
-INSERT INTO invents(name, location, quality, category, picture, qr, client, status)
+INSERT INTO invents(name, location, quality, category, picture, qr, clients, status)
 VALUES('exampleInvent', 'Room 200', 'Low', 'Chair', '/test/test.png', 'test_qr', 'super-admin', 'testStatus');
 
 -- Insert categories

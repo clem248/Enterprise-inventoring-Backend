@@ -1,5 +1,8 @@
 package kg.inai.inventoring.controller;
 
+import kg.inai.inventoring.dto.ClientDTO;
+import kg.inai.inventoring.entity.Client;
+import kg.inai.inventoring.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,9 @@ public class AdminController {
     @Autowired
     private QualityService qualityService;
 
+    @Autowired
+    private ClientService clientService;
+
     // Другие методы контроллера
 
     @GetMapping("/categories")
@@ -36,6 +42,12 @@ public class AdminController {
     public ResponseEntity<List<Quality>> getAllQualities() {
         List<Quality> qualities = qualityService.getAllQualities();
         return ResponseEntity.ok(qualities);
+    }
+
+    @GetMapping("/AllClients")
+    public ResponseEntity<List<ClientDTO>> getAllClients() {
+        List<ClientDTO> clients = clientService.getAllClients();
+        return ResponseEntity.ok(clients);
     }
 
     @GetMapping("/locations")

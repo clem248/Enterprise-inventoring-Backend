@@ -20,8 +20,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public String storeFile(MultipartFile file) throws IOException {
         return cloudinary.uploader()
-                .upload(file.getBytes(),
-                        Map.of("public_id", UUID.randomUUID().toString()))
+                .upload(file.getBytes(), Map.of("public_id", UUID.randomUUID().toString()))
                 .get("url")
                 .toString();
     }
